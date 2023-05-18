@@ -1,6 +1,8 @@
-// Package uel is the uncommon expression language. this is like CEL but instead of using
-// protobufs it lets you use your own types, kind of like userdata in lua.
-package uel
+// Package mito is an attempt at making CEL (the 
+// "common expression language"), but much more
+// simply. instead of using protobufs it lets you
+// use your own types, kind of like userdata in lua.
+package mito
 
 import (
 	"errors"

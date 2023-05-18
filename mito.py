@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-the uncommon expression language. this is like CEL but instead of using
+mito, the uncommon expression language. this is like CEL but instead of using
 protobufs it lets you use your own types kind of like userdata in lua.
 """
 
@@ -403,7 +403,7 @@ class Value:
 
 def run_tests():
     def check_result(input, env, expected):
-        val = uel_eval(input, env)
+        val = mito_eval(input, env)
         if val != expected:
             raise Exception(
                 "input %r with env %r expected %r, got %r" % (input, env, expected, val)
@@ -437,11 +437,11 @@ def run_tests():
     check_result("1 + (10 / 2) > 3", {}, True)
 
 
-def uel_eval(expression, env):
+def mito_eval(expression, env):
     return Parser(expression).parse().run(env)
 
 
-def uel_parse(expression):
+def mito_parse(expression):
     return Parser(expression).parse()
 
 
