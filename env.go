@@ -314,10 +314,16 @@ func init() {
 					if y < 0 {
 						return "", fmt.Errorf("%w: negative string repeat", ErrValueMismatch)
 					}
+					if y > 10 {
+						return "", fmt.Errorf("%w: maximum string repeat limited", ErrValueMismatch)
+					}
 					return strings.Repeat(x, int(y)), nil
 				case float64:
 					if y < 0 {
 						return "", fmt.Errorf("%w: negative string repeat", ErrValueMismatch)
+					}
+					if y > 10 {
+						return "", fmt.Errorf("%w: maximum string repeat limited", ErrValueMismatch)
 					}
 					if math.IsInf(y, 0) || math.IsNaN(y) {
 						return "", fmt.Errorf("%w: invalid string repeat", ErrValueMismatch)
@@ -366,12 +372,21 @@ func init() {
 			case []byte:
 				switch y := b.(type) {
 				case int64:
+					if y > 10 {
+						return "", fmt.Errorf("%w: maximum string repeat limited", ErrValueMismatch)
+					}
 					rv := []byte(nil)
 					for i := int64(0); i < y; i++ {
 						rv = append(rv, x...)
 					}
 					return rv, nil
 				case float64:
+					if y > 10 {
+						return "", fmt.Errorf("%w: maximum string repeat limited", ErrValueMismatch)
+					}
+					if math.IsInf(y, 0) || math.IsNaN(y) {
+						return "", fmt.Errorf("%w: invalid string repeat", ErrValueMismatch)
+					}
 					rv := []byte(nil)
 					for i := int64(0); i < int64(y); i++ {
 						rv = append(rv, x...)
