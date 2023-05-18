@@ -150,6 +150,8 @@ class Parser:
         self.advance()
         self.skip_all_whitespace()
         expr = self.parse_expression()
+        if expr is None:
+            self.assert_source("missing subexpression")
         self.skip_all_whitespace()
         if self.char() != ")":
             self.assert_source(
@@ -212,6 +214,8 @@ class Parser:
 
     def parse_operation(self, value_parse, op_map):
         val = value_parse()
+        if val is None:
+            return None
         while True:
             if self.eof():
                 return val
@@ -250,6 +254,8 @@ class Parser:
         val = self.parse_expression()
         if not self.eof():
             self.assert_source("unparsed input")
+        if val is None:
+            self.assert_source("nothing parsed")
         return val
 
     def parse_expression(self):

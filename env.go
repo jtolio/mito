@@ -311,8 +311,17 @@ func init() {
 			case string:
 				switch y := b.(type) {
 				case int64:
+					if y < 0 {
+						return "", fmt.Errorf("%w: negative string repeat", ErrValueMismatch)
+					}
 					return strings.Repeat(x, int(y)), nil
 				case float64:
+					if y < 0 {
+						return "", fmt.Errorf("%w: negative string repeat", ErrValueMismatch)
+					}
+					if math.IsInf(y, 0) || math.IsNaN(y) {
+						return "", fmt.Errorf("%w: invalid string repeat", ErrValueMismatch)
+					}
 					return strings.Repeat(x, int(y)), nil
 				case bool:
 					if y {
@@ -434,8 +443,14 @@ func init() {
 			case int64:
 				switch y := b.(type) {
 				case int64:
+					if y == 0 {
+						return 0, fmt.Errorf("%w: division by zero", ErrValueMismatch)
+					}
 					return float64(x) / float64(y), nil
 				case float64:
+					if y == 0 {
+						return 0, fmt.Errorf("%w: division by zero", ErrValueMismatch)
+					}
 					return float64(x) / y, nil
 				default:
 					return nil, fmt.Errorf("%w: unsupported type for division %T / %T", ErrTypeMismatch, a, b)
@@ -443,8 +458,14 @@ func init() {
 			case float64:
 				switch y := b.(type) {
 				case int64:
+					if y == 0 {
+						return 0, fmt.Errorf("%w: division by zero", ErrValueMismatch)
+					}
 					return x / float64(y), nil
 				case float64:
+					if y == 0 {
+						return 0, fmt.Errorf("%w: division by zero", ErrValueMismatch)
+					}
 					return x / y, nil
 				default:
 					return nil, fmt.Errorf("%w: unsupported type for division %T / %T", ErrTypeMismatch, a, b)
@@ -452,9 +473,20 @@ func init() {
 			case time.Duration:
 				switch y := b.(type) {
 				case int64:
+					if y == 0 {
+						return 0, fmt.Errorf("%w: division by zero", ErrValueMismatch)
+					}
 					return x / time.Duration(y), nil
 				case float64:
+					if y == 0 {
+						return 0, fmt.Errorf("%w: division by zero", ErrValueMismatch)
+					}
 					return time.Duration(float64(x) / y), nil
+				case time.Duration:
+					if y == 0 {
+						return 0, fmt.Errorf("%w: division by zero", ErrValueMismatch)
+					}
+					return float64(x) / float64(y), nil
 				default:
 					return nil, fmt.Errorf("%w: unsupported type for division %T / %T", ErrTypeMismatch, a, b)
 				}
@@ -742,4 +774,3 @@ func lessHelper(env map[any]any, a, b any) (bool, error) {
 	}
 	return false, fmt.Errorf("less doesn't return bool")
 }
-

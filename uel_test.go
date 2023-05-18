@@ -1,12 +1,20 @@
 package uel
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
 
 func TestRun(t *testing.T) {
+	testRun(t, nil)
+}
+
+func testRun(t testing.TB, inputcb func(string)) {
 	checkResult := func(input string, env map[any]any, expected interface{}) {
+		if inputcb != nil {
+			inputcb(input)
+		}
 		t.Helper()
 		val, err := Eval(input, env)
 		if err != nil {
@@ -128,4 +136,27 @@ func TestRun(t *testing.T) {
 		},
 		true)
 
+}
+
+func FuzzRun(f *testing.F) {
+	testRun(f, func(input string) { f.Add(input) })
+	f.Add("")
+	f.Add("||0")
+	f.Add("0(,000)")
+	f.Add("0(0,)")
+	f.Add("0s/0")
+	f.Add(`""*-1`)
+	f.Add("\"0\xb5\xcf00\x97\xa10\x1800000\xab\"*100000000")
+	emptyEnv := map[any]any{}
+
+	// just make sure there aren't any panics
+	f.Fuzz(func(t *testing.T, input string) {
+		val, err := Parse(input)
+		if err == nil {
+			if val == nil {
+				panic(fmt.Sprintf("%q", input))
+			}
+			_, _ = val.Run(emptyEnv)
+		}
+	})
 }

@@ -13,11 +13,12 @@ import (
 )
 
 var (
-	ErrParser       = errors.New("parser error")
-	ErrUnboundVar   = errors.New("unbound variable")
-	ErrUnknownOp    = errors.New("unknown op")
-	ErrInvalidOp    = errors.New("invalid op")
-	ErrTypeMismatch = errors.New("type mismatch")
+	ErrParser        = errors.New("parser error")
+	ErrUnboundVar    = errors.New("unbound variable")
+	ErrUnknownOp     = errors.New("unknown op")
+	ErrInvalidOp     = errors.New("invalid op")
+	ErrTypeMismatch  = errors.New("type mismatch")
+	ErrValueMismatch = errors.New("value mismatch")
 )
 
 func setToMap(chars string) map[rune]bool {
@@ -319,6 +320,9 @@ func (p *Parser) parseFunctionCall() (Evaluable, error) {
 	if err != nil {
 		return nil, err
 	}
+	if val == nil {
+		return nil, nil
+	}
 	for {
 		if p.eof() {
 			return val, nil
@@ -359,6 +363,9 @@ func (p *Parser) parseArgs() ([]Evaluable, error) {
 	if err != nil {
 		return nil, err
 	}
+	if arg == nil {
+		return nil, p.sourceError("unexpected missing argument")
+	}
 	args = append(args, arg)
 	for {
 		if _, err = p.skipAllWhitespace(); err != nil {
@@ -383,6 +390,9 @@ func (p *Parser) parseArgs() ([]Evaluable, error) {
 		if err != nil {
 			return nil, err
 		}
+		if arg == nil {
+			return nil, p.sourceError("unexpected missing argument")
+		}
 		args = append(args, arg)
 	}
 }
@@ -401,6 +411,9 @@ func (p *Parser) parseSubexpression() (Evaluable, error) {
 	if err != nil {
 		return nil, err
 	}
+	if expr == nil {
+		return nil, p.sourceError("missing subexpression")
+	}
 	if _, err = p.skipAllWhitespace(); err != nil {
 		return nil, err
 	}
@@ -418,7 +431,7 @@ func (p *Parser) parseExponentiation() (Evaluable, error) {
 	return p.parseOperation(
 		p.parseSubexpression,
 		map[OpType][]string{
-			OpExp: []string{"^"},
+			OpExp: {"^"},
 		},
 	)
 }
@@ -427,7 +440,7 @@ func (p *Parser) parseValNegation() (Evaluable, error) {
 	return p.parseModifier(
 		p.parseExponentiation,
 		map[ModType][]string{
-			ModNeg: []string{"-"},
+			ModNeg: {"-"},
 		},
 	)
 }
@@ -436,8 +449,8 @@ func (p *Parser) parseMultiplicationDivision() (Evaluable, error) {
 	return p.parseOperation(
 		p.parseValNegation,
 		map[OpType][]string{
-			OpMul: []string{"*"},
-			OpDiv: []string{"/"},
+			OpMul: {"*"},
+			OpDiv: {"/"},
 		},
 	)
 }
@@ -446,8 +459,8 @@ func (p *Parser) parseAdditionSubtraction() (Evaluable, error) {
 	return p.parseOperation(
 		p.parseMultiplicationDivision,
 		map[OpType][]string{
-			OpAdd: []string{"+"},
-			OpSub: []string{"-"},
+			OpAdd: {"+"},
+			OpSub: {"-"},
 		},
 	)
 }
@@ -456,12 +469,12 @@ func (p *Parser) parseComparison() (Evaluable, error) {
 	return p.parseOperation(
 		p.parseAdditionSubtraction,
 		map[OpType][]string{
-			OpLess:         []string{"<"},
-			OpLessEqual:    []string{"<="},
-			OpEqual:        []string{"=="},
-			OpNotEqual:     []string{"!=", "~=", "<>"},
-			OpGreater:      []string{">"},
-			OpGreaterEqual: []string{">="},
+			OpLess:         {"<"},
+			OpLessEqual:    {"<="},
+			OpEqual:        {"=="},
+			OpNotEqual:     {"!=", "~=", "<>"},
+			OpGreater:      {">"},
+			OpGreaterEqual: {">="},
 		},
 	)
 }
@@ -470,7 +483,7 @@ func (p *Parser) parseBoolNegation() (Evaluable, error) {
 	return p.parseModifier(
 		p.parseComparison,
 		map[ModType][]string{
-			ModNot: []string{"!", "not"},
+			ModNot: {"!", "not"},
 		},
 	)
 }
@@ -479,7 +492,7 @@ func (p *Parser) parseConjunction() (Evaluable, error) {
 	return p.parseOperation(
 		p.parseBoolNegation,
 		map[OpType][]string{
-			OpAnd: []string{"&&", "and"},
+			OpAnd: {"&&", "and"},
 		},
 	)
 }
@@ -488,7 +501,7 @@ func (p *Parser) parseDisjunction() (Evaluable, error) {
 	return p.parseOperation(
 		p.parseConjunction,
 		map[OpType][]string{
-			OpOr: []string{"||", "or"},
+			OpOr: {"||", "or"},
 		},
 	)
 }
@@ -498,6 +511,9 @@ func (p *Parser) parseOperation(valueParse func() (Evaluable, error),
 	val, err := valueParse()
 	if err != nil {
 		return nil, err
+	}
+	if val == nil {
+		return nil, nil
 	}
 	for {
 		if p.eof() {
@@ -573,6 +589,9 @@ func (p *Parser) Parse() (Evaluable, error) {
 	}
 	if !p.eof() {
 		return nil, p.sourceError("unparsed input")
+	}
+	if val == nil {
+		return nil, p.sourceError("nothing parsed")
 	}
 	return val, nil
 }
