@@ -394,6 +394,9 @@ func (p *Parser) parseSubexpression() (Evaluable, error) {
 	if err := p.advance(1); err != nil {
 		return nil, err
 	}
+	if _, err := p.skipAllWhitespace(); err != nil {
+		return nil, err
+	}
 	expr, err := p.parseExpression()
 	if err != nil {
 		return nil, err
@@ -740,4 +743,3 @@ func Eval(expression string, env map[any]any) (any, error) {
 	}
 	return val.Run(env)
 }
-

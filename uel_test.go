@@ -87,5 +87,45 @@ func TestRun(t *testing.T) {
 	checkResult("2h", emptyEnv, 2*time.Hour)
 	checkResult("2s == 2 * (1s)", emptyEnv, true)
 
-}
+	checkResult(
+		`(
+	# Elevation (ft)
+	elevation >= 100
+	and
+	# Elevation (ft)
+	elevation <= 8000
+	and
+	# Average annual min temperature (deg F), 2050 value
+	tmin_avg_min_2050 >= -6
+	and
+	# Average precipitation (in/year), 2050 value
+	prec_avg_2050 >= 20
+	and
+	# Average annual days above 95 F, 2050 value
+	tmax_days_above_95_2050 <= 20
+	and
+	# Average temperature (deg F), 2010-2050 change
+	tmean_avg_2050d <= 3
+	and
+	# Average annual days at or below freezing, 2050 value
+	tmin_days_at_or_below_32_2050 <= 130
+	and
+	# Average annual max daily average wet-bulb temperature (Stull method, deg F), 2050 value
+	wetbulb_avg_max_2050 < 79
+	and
+	# Average annual days with no precipitation, 2050 value
+	prec_days_at_or_below_0_2050 <= 220
+	)`,
+		map[any]any{
+			"elevation":                     int64(101),
+			"tmin_avg_min_2050":             int64(-5),
+			"prec_avg_2050":                 int64(21),
+			"tmax_days_above_95_2050":       int64(19),
+			"tmean_avg_2050d":               int64(2),
+			"tmin_days_at_or_below_32_2050": int64(129),
+			"wetbulb_avg_max_2050":          int64(78),
+			"prec_days_at_or_below_0_2050":  int64(220),
+		},
+		true)
 
+}

@@ -148,6 +148,7 @@ class Parser:
         if self.char() != "(":
             return self.parse_literal()
         self.advance()
+        self.skip_all_whitespace()
         expr = self.parse_expression()
         self.skip_all_whitespace()
         if self.char() != ")":
