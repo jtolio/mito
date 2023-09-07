@@ -135,10 +135,11 @@ func (p *Parser) skipComment() (bool, error) {
 		if p.eof() {
 			return true, nil
 		}
+		char := p.currentChar
 		if err := p.advance(1); err != nil {
 			return false, err
 		}
-		if p.currentChar == '\n' {
+		if char == '\n' {
 			return true, nil
 		}
 	}

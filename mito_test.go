@@ -21,7 +21,7 @@ func testRun(t testing.TB, inputcb func(string)) {
 			t.Fatal(err)
 		}
 		if val != expected {
-			t.Fatalf("input %#v with env %#v expected %#v, got %#v", input, env, expected, val)
+			t.Fatalf("input %#v with env %#v expected %#v %#T, got %#v %#T", input, env, expected, val, expected, val)
 		}
 	}
 
@@ -94,6 +94,8 @@ func testRun(t testing.TB, inputcb func(string)) {
 
 	checkResult("2h", emptyEnv, 2*time.Hour)
 	checkResult("2s == 2 * (1s)", emptyEnv, true)
+
+	checkResult("#\n3", emptyEnv, int64(3))
 
 	checkResult(
 		`(
